@@ -19,7 +19,14 @@ function redirect_to_login() {
 	
 	global $wp;
 	
-	if ( ! is_user_logged_in() && ! in_array( $GLOBALS['pagenow'], [ 'wp-login.php' ], true ) ) {
+	if (
+		! is_user_logged_in()
+		&& ! in_array( $GLOBALS['pagenow'], [ 'lb-check.php', 'wp-login.php' ], true )
+		&& (
+			! empty( $_SERVER['REQUEST_URI'] )
+			&& strpos( $_SERVER['REQUEST_URI'], 'rh-carver' ) === false
+		)
+	) {
 		wp_safe_redirect( wp_login_url( site_url( $wp->request ) ) );
 		exit;
 	}
