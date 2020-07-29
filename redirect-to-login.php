@@ -2,7 +2,7 @@
 /*
 Plugin Name: Redirect To Login
 Description: Redirect guests to the login page.
-Version: 1.0.0
+Version: 1.0.1
 Author: KittMedia
 Author URI: https://kittmedia.com
 License: GPL2
@@ -13,7 +13,7 @@ defined( 'ABSPATH' ) || exit;
  * Redirect to the login page.
  */
 function redirect_to_login() {
-	if ( wp_doing_cron() || wp_doing_ajax() ) {
+	if ( wp_doing_cron() || wp_doing_ajax() || defined( 'WP_CLI' ) && WP_CLI ) {
 		return;
 	}
 	
