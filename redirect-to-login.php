@@ -2,7 +2,7 @@
 /*
 Plugin Name: Redirect To Login
 Description: Redirect guests to the login page.
-Version: 1.0.2
+Version: 1.1.0
 Author: KittMedia
 Author URI: https://kittmedia.com
 License: GPL2
@@ -29,7 +29,9 @@ function redirect_to_login() {
 		&& (
 			! empty( $_SERVER['REQUEST_URI'] )
 			&& strpos( $_SERVER['REQUEST_URI'], 'rh-carver' ) === false
+			&& strpos( $_SERVER['REQUEST_URI'], 'api' ) === false
 		)
+		&& ( ! redirect_to_login_is_rest() || ! defined( 'NO_REDIRECT_REST_API' ) || ( defined( 'NO_REDIRECT_REST_API' ) && ! NO_REDIRECT_REST_API ) )
 	) {
 		wp_safe_redirect( wp_login_url( site_url( $wp->request ) ) );
 		exit;
@@ -37,3 +39,33 @@ function redirect_to_login() {
 }
 
 add_action( 'init', 'redirect_to_login' );
+
+/**
+ * Check if the current request is a REST request.
+ * 
+ * @see		https://wordpress.stackexchange.com/a/317041/137048
+ * 
+ * @return	bool True if current request is a REST request, false otherwise
+ */
+function redirect_to_login_is_rest() {
+	$prefix = rest_get_url_prefix();
+	
+	if (
+		defined( 'REST_REQUEST' ) && REST_REQUEST
+		|| isset( $_GET['rest_route'] )
+		&& strpos( trim( $_GET['rest_route'], '\\/' ), $prefix ) === 0
+	) {
+		return true;
+	}
+	
+	global $wp_rewrite;
+	
+	if ( $wp_rewrite === null ) {
+		$wp_rewrite = new WP_Rewrite();
+	}
+	
+	$rest_url = wp_parse_url( trailingslashit( rest_url() ) );
+	$current_url = wp_parse_url( add_query_arg( [] ) );
+	
+	return strpos( $current_url['path'], $rest_url['path'], 0 ) === 0;
+}
