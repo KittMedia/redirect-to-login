@@ -2,7 +2,7 @@
 /*
 Plugin Name: Redirect To Login
 Description: Redirect guests to the login page.
-Version: 1.1.0
+Version: 1.1.1
 Author: KittMedia
 Author URI: https://kittmedia.com
 License: GPL2
@@ -21,8 +21,6 @@ function redirect_to_login() {
 		return;
 	}
 	
-	global $wp;
-	
 	if (
 		! is_user_logged_in()
 		&& ! in_array( $GLOBALS['pagenow'], [ 'lb-check.php', 'wp-login.php' ], true )
@@ -33,7 +31,7 @@ function redirect_to_login() {
 		)
 		&& ( ! redirect_to_login_is_rest() || ! defined( 'NO_REDIRECT_REST_API' ) || ( defined( 'NO_REDIRECT_REST_API' ) && ! NO_REDIRECT_REST_API ) )
 	) {
-		wp_safe_redirect( wp_login_url( site_url( $wp->request ) ) );
+		wp_safe_redirect( wp_login_url( site_url( $_SERVER['REQUEST_URI'] ) ) );
 		exit;
 	}
 }
