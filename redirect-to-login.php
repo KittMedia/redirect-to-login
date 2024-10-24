@@ -1,6 +1,6 @@
 <?php
 /*
-Plugin Name: Redirect To Login
+Plugin Name: Redirect to Login
 Description: Redirect guests to the login page.
 Version: 1.1.2
 Author: KittMedia
@@ -21,14 +21,33 @@ function redirect_to_login() {
 		return;
 	}
 	
+	$ignored_pages = [
+		'lb-check.php',
+		'wp-login.php',
+	];
+	$ignored_uris = [
+		'api',
+		'rh-carver',
+	];
+	
+	/**
+	 * Filter ignored pages.
+	 * 
+	 * @param	string[]	$ignored_pages Current list of ignored pages
+	 */
+	$ignored_pages = (array) \apply_filters( 'redirect_to_login_ignored_pages', $ignored_pages );
+	
+	/**
+	 * Filter ignored URIs.
+	 * 
+	 * @param	string[]	$ignored_uris Current list of ignored URIs
+	 */
+	$ignored_uris = (array) \apply_filters( 'redirect_to_login_ignored_uris', $ignored_uris );
+	
 	if (
 		! is_user_logged_in()
-		&& ! in_array( $GLOBALS['pagenow'], [ 'lb-check.php', 'wp-login.php' ], true )
-		&& (
-			! empty( $_SERVER['REQUEST_URI'] )
-			&& strpos( $_SERVER['REQUEST_URI'], 'rh-carver' ) === false
-			&& strpos( $_SERVER['REQUEST_URI'], 'api' ) === false
-		)
+		&& ! in_array( $GLOBALS['pagenow'], $ignored_pages, true )
+		&& ! redirect_to_login_is_ignored_uri( $ignored_uris )
 		&& ( ! redirect_to_login_is_rest() || ! defined( 'NO_REDIRECT_REST_API' ) || ( defined( 'NO_REDIRECT_REST_API' ) && ! NO_REDIRECT_REST_API ) )
 	) {
 		wp_safe_redirect( wp_login_url( site_url( $_SERVER['REQUEST_URI'] ) ) );
@@ -37,6 +56,26 @@ function redirect_to_login() {
 }
 
 add_action( 'init', 'redirect_to_login' );
+
+/**
+ * Check, whether the current request URI contains an ignored URI.
+ * 
+ * @param	string[]	$ignored_uris List of ignored URIs
+ * @return	bool Wether the current request URI contains an ignored URI
+ */
+function redirect_to_login_is_ignored_uri( array $ignored_uris ): bool {
+	if ( empty( $_SERVER['REQUEST_URI'] ) ) {
+		return false;
+	}
+	
+	foreach ( $ignored_uris as $uri ) {
+		if ( \strpos( $_SERVER['REQUEST_URI'], $uri ) !== false ) {
+			return true;
+		}
+	}
+	
+	return false;
+}
 
 /**
  * Check if the current request is a REST request.
