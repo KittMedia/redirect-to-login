@@ -2,7 +2,7 @@
 /*
 Plugin Name: Redirect to Login
 Description: Redirect guests to the login page.
-Version: 1.1.2
+Version: 1.2.0
 Author: KittMedia
 Author URI: https://kittmedia.com
 License: GPL2
@@ -21,13 +21,22 @@ function redirect_to_login() {
 		return;
 	}
 	
+	/**
+	 * Filter whether the current request is ignored.
+	 * 
+	 * @param	bool	$ignore_request Whether the current request is ignored
+	 */
+	$ignore_request = (bool) \apply_filters( 'redirect_to_login_ignore_request', false );
+	
+	if ( $ignore_request ) {
+		return;
+	}
+	
 	$ignored_pages = [
-		'lb-check.php',
 		'wp-login.php',
 	];
 	$ignored_uris = [
 		'api',
-		'rh-carver',
 	];
 	
 	/**
